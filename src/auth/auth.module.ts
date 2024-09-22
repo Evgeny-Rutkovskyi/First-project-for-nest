@@ -5,11 +5,16 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
 import { DatabaseModule } from 'src/database/database.module';
 import { JwtGuard } from './jwt-auth.guard';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [JwtModule.register({
-    secret: process.env.SECRET_KEY,
-    signOptions: { expiresIn: '24h' },
+  imports: [JwtModule.registerAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (configService: ConfigService) => ({
+      secret: configService.get<string>('SECRET_KEY'),
+      signOptions: { expiresIn: '24h' },
+    }),
   }), forwardRef(() => UserModule), DatabaseModule],
   providers: [AuthService],
   controllers: [AuthController],

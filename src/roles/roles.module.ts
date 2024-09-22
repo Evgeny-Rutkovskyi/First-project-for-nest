@@ -3,11 +3,16 @@ import { RolesService } from './roles.service';
 import { RolesController } from './roles.controller';
 import { DatabaseModule } from 'src/database/database.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [DatabaseModule, JwtModule.register({
-    secret: process.env.SECRET_KEY,
-    signOptions: { expiresIn: '24h' },
+  imports: [DatabaseModule, JwtModule.registerAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (configService: ConfigService) => ({
+      secret: configService.get<string>('SECRET_KEY'),
+      signOptions: { expiresIn: '24h' },
+    }),
   })],
   providers: [RolesService],
   controllers: [RolesController],

@@ -8,6 +8,7 @@ import { Roles } from 'src/auth/roles.decorator';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Book } from './book.model';
 import { Author } from './author.model';
+import { RolesGuard } from 'src/auth/roles.guard';
 
 @ApiTags('Book')
 @Controller('book')
@@ -22,6 +23,7 @@ export class BookController {
     @ApiResponse({status: 400, description: 'BadRequestException, Книга вже наявна в продажі'})
     @ApiResponse({status: 500, description: 'Internal Server Error'})
     @UseGuards(JwtGuard)
+    @UseGuards(RolesGuard)
     @Roles('ADMIN')
     @Post('/add/admin')
     addBookAdmin(@Body() bookDto: BookDto){
@@ -35,6 +37,7 @@ export class BookController {
     @ApiResponse({status: 404, description: 'NotFoundException, Not book exist'})
     @ApiResponse({status: 500, description: 'Internal Server Error'})
     @UseGuards(JwtGuard)
+    @UseGuards(RolesGuard)
     @Roles('ADMIN')
     @Post('/add/author/admin')
     addSecondAuthorForBookAdmin(@Body() authorDto: AuthorDto){
@@ -66,7 +69,7 @@ export class BookController {
     @ApiResponse({status: 200, type: Book})
     @ApiResponse({status: 404, description: 'NotFoundException, Not book exist'})
     @ApiResponse({status: 500, description: 'Internal Server Error'})
-    @Get('/book/:id')
+    @Get('/book/by/:id')
     getBookById(@Param('id') id: number){
         return this.bookService.getBookById(id);
     }

@@ -21,7 +21,7 @@ import { OrderDetail } from './orders/details-order.model';
 
 @Module({
   imports: [ConfigModule.forRoot({
-    envFilePath: `.${process.env.NODE_ENV}.env`
+    envFilePath: `.${process.env.NODE_ENV}.env`,
   }),SequelizeModule.forRoot({
     dialect: 'postgres',
     host: process.env.POSTGRES_HOST,

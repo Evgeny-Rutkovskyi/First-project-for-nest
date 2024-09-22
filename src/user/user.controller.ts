@@ -8,6 +8,7 @@ import { Roles } from 'src/auth/roles.decorator';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './user.model';
+import { RolesGuard } from 'src/auth/roles.guard';
 
 
 
@@ -17,28 +18,20 @@ export class UserController {
     
     constructor(private readonly userService: UserService) {}
 
-    @ApiOperation({summary: 'Створює користувача'})
-    @ApiResponse({status: 200, type: User})
-    @ApiResponse({status: 409, description: 'ConflictException, this user is created'})
-    @ApiResponse({status: 500, description: 'Internal Server Error'})
-    @ApiBody({type: userDto})
-    @UsePipes(ValidationPipe)
-    @Post('/create')
-    create(@Body() createUserDto: userDto){
-        return this.userService.createUser(createUserDto);
-    }
-
+    
     @ApiOperation({summary: 'Повертає всіх користувачів'})
     @ApiResponse({status: 200, type: [User]})
     @ApiResponse({status: 500, description: 'Internal Server Error'})
     @ApiBearerAuth('token')
     @UseGuards(JwtGuard)
+    @UseGuards(RolesGuard)
     @Roles('ADMIN')
     @Get('/get')
     getAll(){
         return this.userService.getAllUser();
     }
 
+    
     @ApiOperation({summary: 'Додає роль для користувача'})
     @ApiBearerAuth('token')
     @ApiBody({type: AddRole})
@@ -46,12 +39,14 @@ export class UserController {
     @ApiResponse({status: 404, description: 'NotFoundException, not found user/role'})
     @ApiResponse({status: 500, description: 'Internal Server Error'})
     @UseGuards(JwtGuard)
+    @UseGuards(RolesGuard)
     @Roles('ADMIN')
     @Post('/add/role')
     addRole(@Body() dto: AddRole){
         return this.userService.addRole(dto);
     }
 
+    
     @ApiOperation({summary: 'Повертає користувача за ID'})
     @ApiParam({name: 'id', type: String, description: 'ID user'})
     @ApiBearerAuth('token')
@@ -64,6 +59,7 @@ export class UserController {
         return this.userService.getUserById(id);
     }
 
+    
     @ApiOperation({summary: 'Створює новий email for user'})
     @ApiBearerAuth('token')
     @ApiParam({name: 'id', type: String, description: 'ID user'})
@@ -71,11 +67,12 @@ export class UserController {
     @ApiResponse({status: 400, description: 'BadRequestException, do not valid password'})
     @ApiResponse({status: 500, description: 'Internal Server Error'})
     @UseGuards(JwtGuard)
-    @Patch('/:id')
+    @Patch('/email/:id')
     updateEmailUser(@Param('id') id: number, @Body() dto: UpdateDto){
         return this.userService.updateEmailUserById(id, dto);
     }
 
+    
     @ApiOperation({summary: 'Створює новий password for user'})
     @ApiBearerAuth('token')
     @ApiParam({name: 'id', type: String, description: 'ID user'})
@@ -83,8 +80,8 @@ export class UserController {
     @ApiResponse({status: 400, description: 'BadRequestException, do not valid password'})
     @ApiResponse({status: 500, description: 'Internal Server Error'})
     @UseGuards(JwtGuard)
-    @Patch('/:id')
-    updatePasswordUserById(@Param('id') id: number, @Body() dto: UpdateDto){
+    @Patch('/password/:id')
+    updatePasswordUser(@Param('id') id: number, @Body() dto: UpdateDto){
         return this.userService.updatePasswordUserById(id, dto);
     }
 

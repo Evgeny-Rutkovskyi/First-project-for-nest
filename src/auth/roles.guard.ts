@@ -29,7 +29,7 @@ export class RolesGuard implements CanActivate{
             }
             const user = this.jwtService.verify(token);
             req.user = user;
-            return user.roles.some(role => requiredRoles.includes(role.value));
+            return user.role.some(obj => requiredRoles.includes(obj.value));
         } catch (e) {
             console.log('RolesGuard -', e);
             throw new InternalServerErrorException('Server error');

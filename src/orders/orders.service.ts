@@ -95,7 +95,7 @@ export class OrdersService {
             if(!user){
                 throw new NotFoundException('Не існує даного користувача');
             }
-            await this.orderDetailRepository.destroy({where: {id_user: idUser}});
+            await this.orderUserBookRepository.destroy({where: {id_user: idUser}});
             return user;
         } catch (e) {
             console.log('deleteAllBasketByIdUserMethod -', e);
@@ -169,6 +169,7 @@ export class OrdersService {
             }
             const bonusPrice = orderDetail.order_sum_self;
             orderDetail.order_sum = bonusPrice;
+            orderDetail.user_bonus = 0;
             await orderDetail.save();
             const user = await this.userService.getUserById(idUser);
             await user.update({bonus: Sequelize.literal(`bonus - ${orderDetail.user_bonus}`)}, {where: {id: idUser}});

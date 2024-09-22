@@ -20,7 +20,6 @@ export class OrdersController {
     @ApiResponse({status: 404, description: 'NotFoundException, Not found this book'})
     @ApiResponse({status: 400, description: 'BadRequestException, do not valid token'})
     @ApiResponse({status: 500, description: 'Internal Server Error'})
-    @UseGuards(JwtGuard)
     @Post('/by/:idBook')
     byBookWithId(@Param('idBook') idBook: number, @Headers('authorization') authHeader: string){
         return this.orderService.byBookWithId(idBook, authHeader);
@@ -73,7 +72,7 @@ export class OrdersController {
     @UseGuards(JwtGuard)
     @Delete('/basket/:idUser')
     deleteAllBasketByIdUser(@Param('idUser') idUser: number){
-        return this.deleteAllBasketByIdUser(idUser);
+        return this.orderService.deleteAllBasketByIdUser(idUser);
     }
 
     @ApiOperation({summary: 'Створює замовлення'})

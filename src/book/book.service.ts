@@ -17,7 +17,14 @@ export class BookService {
         try{    
             const [book, created] = await this.bookRepository.findOrCreate({
                 where: {name: bookDto.nameBook},
-                defaults: {...bookDto}
+                defaults: {
+                    name: bookDto.nameBook,
+                    pages: bookDto.pages,
+                    price: bookDto.price,
+                    units_in_stock: bookDto.units_in_stock,
+                    year_of_release: bookDto.year_of_release,
+                    genre: bookDto.genre
+                }
             });
             if(!created){
                 throw new BadRequestException('Дана книга вже існує в продажі');
@@ -95,12 +102,12 @@ export class BookService {
         }
     }
 
-    async getBookByAuthor(author){
+    async getBookByAuthor(author: string){
         try{
             const [name, surname] = author.split(' ');
             const bookWithAuthor = await this.authorRepository.findAll({
                 where: {name, surname},
-                include: [{model: Author}, {model: Comment}]
+                include: [{model: Book, include: [{model: Comment}]}]
             })
             if(!bookWithAuthor){
                 throw new NotFoundException('Не було знайдено жодної книги за цим автором');

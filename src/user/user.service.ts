@@ -1,6 +1,6 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import {bcrypt} from 'bcryptjs'
+import * as bcrypt from 'bcryptjs'
 import { User } from './user.model';
 import { userDto } from './dto/create-user.dto';
 import { Role } from 'src/roles/roles.model';
@@ -8,6 +8,7 @@ import { RolesService } from 'src/roles/roles.service';
 import { Token } from './token.model';
 import { AddRole } from './dto/roles-admin.dto';
 import { UpdateDto } from './dto/update.dto';
+import { AuthService } from 'src/auth/auth.service';
 
 
 @Injectable()
@@ -51,7 +52,7 @@ export class UserService {
         }
     }
 
-
+    
     async getUserById(idUser: number){
         try {
             const user = await this.userRepository.findByPk(idUser);
@@ -65,7 +66,6 @@ export class UserService {
         }
     }
 
-    
     async updateEmailUserById(idUser: number, dto: UpdateDto){
         try {
             const isUser = await this.isValidateUser(idUser, dto);
@@ -83,15 +83,15 @@ export class UserService {
         }
     }
 
+    
     async updatePasswordUserById(idUser: number, dto: UpdateDto){
-        try {
-            const isUser = await this.isValidateUser(idUser, dto);
+        try {    
+            const isUser = await this.isValidateUser(idUser, dto);       
             if(!isUser){
                 throw new BadRequestException('Не вірно введений пароль');
             }
             const updateUser = await this.userRepository.update({password: dto.newPassword},
-                {where: {id: idUser},
-                returning: true}
+                {where: {id: idUser}}
             );
             return updateUser;
         } catch (e) {
@@ -118,10 +118,7 @@ export class UserService {
 
     async getUserByEmail(email: string){
         try{
-            const user = await this.userRepository.findOne({where: {email}});
-            if(!user){
-                throw new BadRequestException('Не існує такого користувача');
-            }
+            const user = await this.userRepository.findOne({where: {email}, include: [{model: Role}]});
             return user;
         }catch(e){
             console.log('getUserByEmailMethod -', e);
@@ -149,15 +146,16 @@ export class UserService {
         }
     }
 
+    
     async addRole(dto: AddRole){
         try{
             const user = await this.userRepository.findByPk(dto.id_user);
             const role = await this.roleService.getRoleByValue(dto.value);
-            if(user && role){
-                await user.$add('roles', role.id);
-                return dto;
+            if(!user || !role){
+                throw new NotFoundException('Не знайдено роль або користувача');
             }
-            throw new NotFoundException('Не знайдено роль або користувача');
+            await user.$add('roles', role.id);
+            return role;
         }catch (e){
             console.log('addRoleMethod -', e);
             throw new InternalServerErrorException('Internal Server Error');

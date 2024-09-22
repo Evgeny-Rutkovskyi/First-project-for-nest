@@ -11,7 +11,7 @@ export class JwtGuard implements CanActivate{
         try{
             const authHeader = req.headers.authorization;
             const bearer = authHeader.split(' ')[0];
-            const token = authHeader.split(' ')[1];
+            const token = authHeader.split(' ')[1];            
             if(bearer !== 'Bearer' && !token){
                 throw new BadRequestException('Користувач не пройшов валідацію токена');
             }

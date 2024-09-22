@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { userDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
@@ -18,7 +18,7 @@ export class AuthService {
         try{
             const user = await this.validateUser(dto);
             const token = await this.generateToken(user);
-            await this.userService.saveTokenByIdUser(user.id, token.token);
+            await this.userService.updateTokenByIdUser(user.id, token.token);
             return token;
         } catch (e) {
             console.log('loginMethod -', e);
@@ -29,8 +29,6 @@ export class AuthService {
     async registration(dto: userDto){
         try{
             const candidate = await this.userService.getUserByEmail(dto.email);
-            console.log(candidate);
-            
             if(candidate){
                 throw new BadRequestException('Даний користувач вже наявний');
             }
@@ -45,7 +43,7 @@ export class AuthService {
         }
     }
 
-    private async generateToken(user: User){
+     async generateToken(user: User){
         try{
             const payload = {email: user.email, id: user.id, role: user.roles};
             return {
