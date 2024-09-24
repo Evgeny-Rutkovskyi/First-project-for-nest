@@ -57,7 +57,7 @@ export class UserService {
         try {
             const user = await this.userRepository.findByPk(idUser);
             if(!user){
-                throw new ConflictException('Користувача з таким емейлом вже існує');
+                throw new ConflictException('Користувача з таким емейлом не існує');
             }
             return user;
         } catch (e) {
@@ -79,7 +79,7 @@ export class UserService {
             return updateUser;
         } catch (e) {
             console.log('updateEmailUserByIdMethod -', e);
-            throw new InternalServerErrorException('Internal Server Error');
+            throw new NotFoundException(`Не знайдено користувача - ${e}`);
         }
     }
 
@@ -96,7 +96,7 @@ export class UserService {
             return updateUser;
         } catch (e) {
             console.log('updatePasswordUserByIdMethod -', e);
-            throw new InternalServerErrorException('Internal Server Error');
+            throw new NotFoundException(`Не знайдено користувача - ${e}`);
         }
     }
 
@@ -151,14 +151,13 @@ export class UserService {
         try{
             const user = await this.userRepository.findByPk(dto.id_user);
             const role = await this.roleService.getRoleByValue(dto.value);
-            if(!user || !role){
-                throw new NotFoundException('Не знайдено роль або користувача');
-            }
+            if(!user) throw new NotFoundException('Не знайдено користувача');
+            if(!role) throw new NotFoundException('Не знайдено роль');
             await user.$add('roles', role.id);
             return role;
         }catch (e){
             console.log('addRoleMethod -', e);
-            throw new InternalServerErrorException('Internal Server Error');
+            throw new NotFoundException(`Не існує даної ролі - ${e}`);
         }
     }
 
@@ -166,7 +165,7 @@ export class UserService {
         try{
             const user = await this.userRepository.findByPk(idUser);
             if(!user){
-                throw new NotFoundException('Не знайдено роль або користувача');
+                throw new NotFoundException('Не знайдено користувача');
             }
             const isComparePassword = await bcrypt.compare(dto.password, user.password);
             return isComparePassword;

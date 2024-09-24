@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { OrderDetail } from './details-order.model';
 import { UserService } from 'src/user/user.service';
@@ -34,7 +34,7 @@ export class OrdersService {
             return book;
         } catch (e) {
             console.log('byBookWithIdMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new NotFoundException(`Не було знайдено дану книгу - ${e}`);
         }
     }
 
@@ -47,7 +47,7 @@ export class OrdersService {
             return {bonus: user.bonus};
         }catch(e){
             console.log('getBonusUserMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new ConflictException(`Користувача з таким емейлом не існує - ${e}`);
         }
     }
 
@@ -69,7 +69,7 @@ export class OrdersService {
             return booksInBasket;
         }catch (e){
             console.log('getByBooksWithBasketMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new ConflictException(`Користувача з таким емейлом не існує - ${e}`);
         }
     }
 
@@ -85,7 +85,7 @@ export class OrdersService {
             return book;
         }catch (e) {
             console.log('deleteBookWithBasketMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new ConflictException(`Користувача з таким емейлом не існує/не було знайдено такої книги в кошику - ${e}}`);
         }
     }
 
@@ -99,7 +99,7 @@ export class OrdersService {
             return user;
         } catch (e) {
             console.log('deleteAllBasketByIdUserMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new ConflictException(`Користувача з таким емейлом не існує - ${e}`);
         }
     }
 
@@ -143,7 +143,7 @@ export class OrdersService {
             return orderUser;
         } catch (e) {
             console.log('successOrderWithIdUserMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new NotFoundException(`Не існує жодного замовлення у даного користувача - ${e}`);
         }
     }
 
@@ -176,10 +176,9 @@ export class OrdersService {
             return orderDetail;
         }catch(e){
             console.log('byBookWithBonusByIdUserMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new NotFoundException(`Не існує жодного замовлення у даного користувача - ${e}`);
         }
     }
-    
 
     private async selfPrice(bonus: number, allSum: number){
         if(allSum - bonus > 0){

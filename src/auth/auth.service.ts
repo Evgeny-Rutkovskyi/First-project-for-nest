@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { userDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
@@ -22,7 +22,7 @@ export class AuthService {
             return token;
         } catch (e) {
             console.log('loginMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new BadRequestException(`Користувач не пройшов валідацію - ${e}`);
         }
     }
 
@@ -39,7 +39,7 @@ export class AuthService {
             return createToken;
         } catch (e) {
             console.log('registrationMethod -', e);
-            throw new InternalServerErrorException('Server error');
+            throw new ConflictException(`Користувач з даним емейлом вже створений - ${e}`);
         }
     }
 
